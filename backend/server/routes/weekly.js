@@ -1,12 +1,15 @@
 const express = require("express");
 
-const { Weekly } = require("../../database");
+const { User, Weekly } = require("../../database");
+
 const {
 	createTask,
 	readTask,
 	updateTask,
+	claimTask,
 	deleteTask,
 } = require("../helpers/task-crud");
+const { claimTask: userRequire } = require("../helpers/user-crud");
 
 const router = express.Router();
 
@@ -20,6 +23,11 @@ router.put("/:user", (req, res) => {
 
 router.post("/:user/:id", (req, res) => {
 	updateTask(req, res, Weekly);
+});
+
+router.post("/:user/:id/claim", (req, res) => {
+	userRequire(req.params.user, User, Weekly, process.env.WEEKLY_POINTS);
+	claimTask(req, res, Weekly);
 });
 
 router.delete("/:user/:id", (req, res) => {

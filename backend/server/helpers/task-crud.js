@@ -17,10 +17,17 @@ const readTask = async (req, res, model) => {
 
 const updateTask = async (req, res, model) => {
 	const { user, id } = req.params;
-	const { title, claimed } = req.body;
+	const { title } = req.body;
 	await model.findByIdAndUpdate(id, {
 		title: title,
-		claimed: claimed,
+	});
+	res.sendStatus(200);
+};
+
+const claimTask = async (req, res, model) => {
+	const { user, id } = req.params;
+	await model.findByIdAndUpdate(id, {
+		claimed: true,
 	});
 	res.sendStatus(200);
 };
@@ -31,4 +38,4 @@ const deleteTask = async (req, res, model) => {
 	res.sendStatus(200);
 };
 
-module.exports = { createTask, readTask, updateTask, deleteTask };
+module.exports = { createTask, readTask, updateTask, claimTask, deleteTask };

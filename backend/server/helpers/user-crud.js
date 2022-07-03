@@ -65,4 +65,52 @@ const deleteUser = async (req, res, model) => {
 	}
 };
 
-module.exports = { loginUser, createUser, readUser, updateUser, deleteUser };
+const claimTask = async (userId, userModel, taskModel, taskTotalPoints) => {
+	const user = await userModel.findById(userId);
+	const tasks = await taskModel.find({ owner: userId });
+	const points = taskTotalPoints / tasks.length;
+	console.log(taskTotalPoints, tasks.length, points);
+	const {
+		POINTS_PER_LEVEL,
+		TOTAL_POINTS,
+		FINAL_REWARD,
+		TEN_REWARD,
+		ONE_REWARD,
+	} = process.env;
+
+	const newPoints = Math.min(user.points + points, TOTAL_POINTS);
+	const levelDiff = parseInt(newPoints / POINTS_PER_LEVEL) - user.level;
+	console.log(
+		newPoints,
+		POINTS_PER_LEVEL,
+		newPoints % POINTS_PER_LEVEL,
+		levelDiff
+	);
+	if (levelDiff > 0) {
+		let reward = 0;
+		const newLevel = user.level + levelDiff;
+		for (let i = user.level; i <= newLevel; i++) {
+			if (i % 10 === 0) reward += user.budget * eval(TEN_REWARD);
+			else if (i === parseInt(TOTAL_POINTS / POINTS_PER_LEVEL))
+				reward += user.budget * eval(FINAL_REWARD);
+			else reward += user.budget * eval(ONE_REWARD);
+		}
+		const newBalance = user.balance + parseInt(reward);
+
+		user.balance = newBalance;
+		user.level = newLevel;
+		console.log(ONE_REWARD, reward, newLevel);
+	}
+	user.points = newPoints;
+
+	await userModel.findByIdAndUpdate(userId, user);
+};
+
+module.exports = {
+	loginUser,
+	createUser,
+	readUser,
+	updateUser,
+	deleteUser,
+	claimTask,
+};

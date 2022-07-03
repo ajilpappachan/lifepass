@@ -1,12 +1,15 @@
 const express = require("express");
 
-const { Daily } = require("../../database");
+const { User, Daily } = require("../../database");
+
 const {
 	createTask,
 	readTask,
 	updateTask,
+	claimTask,
 	deleteTask,
 } = require("../helpers/task-crud");
+const { claimTask: userRequire } = require("../helpers/user-crud");
 
 const router = express.Router();
 
@@ -20,6 +23,11 @@ router.put("/:user", (req, res) => {
 
 router.post("/:user/:id", (req, res) => {
 	updateTask(req, res, Daily);
+});
+
+router.post("/:user/:id/claim", (req, res) => {
+	userRequire(req.params.user, User, Daily, process.env.DAILY_POINTS);
+	claimTask(req, res, Daily);
 });
 
 router.delete("/:user/:id", (req, res) => {
